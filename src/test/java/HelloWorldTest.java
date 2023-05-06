@@ -1,4 +1,5 @@
 import io.restassured.RestAssured;
+import io.restassured.http.Headers;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.Test;
@@ -146,5 +147,117 @@ public class HelloWorldTest {
             .andReturn();
     int statusCode = response.getStatusCode();
     System.out.println(statusCode);
+  }
+
+  @Test
+  public void testHeaders1() {
+    Map<String, String> headers = new HashMap<>();
+    headers.put("myHeader1", "myValue1");
+    headers.put("myHeader2", "myValue2");
+
+    Response response = RestAssured
+            .given()
+            .headers(headers)
+            .when()
+            .get("https://playground.learnqa.ru/api/show_all_headers")
+            .andReturn();
+    response.prettyPrint();
+
+    Headers responseHeaders = response.getHeaders();
+    System.out.println(responseHeaders);
+  }
+
+  @Test
+  public void testHeaders2() {
+    Map<String, String> headers = new HashMap<>();
+    headers.put("myHeader1", "myValue1");
+    headers.put("myHeader2", "myValue2");
+
+    Response response = RestAssured
+            .given()
+            .redirects()
+            .follow(false)
+            .when()
+            .get("https://playground.learnqa.ru/api/get_303")
+            .andReturn();
+    response.prettyPrint();
+
+    String locationHeader = response.getHeader("Location");
+    System.out.println(locationHeader);
+  }
+
+  @Test
+  public void testCookies() {
+    Map<String, String> date = new HashMap<>();
+    date.put("login", "secret_login"); // date.put("login", "secret_login2");
+    date.put("password", "secret_pass"); // date.put("login", "secret_login2");
+
+    Response response = RestAssured
+            .given()
+            .body(date)
+            .when()
+            .post("https://playground.learnqa.ru/api/get_auth_cookie")
+            .andReturn();
+
+    System.out.println("\nPretty text:");
+    response.prettyPrint();
+
+    System.out.println("\nHeaders:");
+    Headers responseHeaders = response.getHeaders();
+    System.out.println(responseHeaders);
+
+    System.out.println("\nCookies:");
+    Map<String, String> responseCookies = response.getCookies();
+    System.out.println(responseCookies);
+  }
+
+  @Test
+  public void testCookie() {
+    Map<String, String> date = new HashMap<>();
+    date.put("login", "secret_login");
+    date.put("password", "secret_pass");
+
+    Response response = RestAssured
+            .given()
+            .body(date)
+            .when()
+            .post("https://playground.learnqa.ru/api/get_auth_cookie")
+            .andReturn();
+
+    String responseCookie = response.getCookie("auth_cookie");
+    System.out.println(responseCookie);
+  }
+
+  @Test
+  public void testGetCookie() {
+    Map<String, String> date = new HashMap<>();
+    date.put("login", "secret_login");
+    date.put("password", "secret_pass");
+
+    Response responseForGet = RestAssured
+            .given()
+            .body(date)
+            .when()
+            .post("https://playground.learnqa.ru/api/get_auth_cookie")
+            .andReturn();
+
+    //получили куки
+    String responseCookie = responseForGet.getCookie("auth_cookie");
+
+    // передаем куки
+    Map<String, String> cookies = new HashMap<>();
+    if (responseCookie != null) {
+      cookies.put("auth_cookie", responseCookie);
+    }
+
+    Response responseForCheck = RestAssured
+            .given()
+            .body(date)
+            .cookies(cookies)
+            .when()
+            .post("https://playground.learnqa.ru/api/check_auth_cookie")
+            .andReturn();
+
+    responseForCheck.print();
   }
 }

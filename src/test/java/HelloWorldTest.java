@@ -1,9 +1,10 @@
 import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
+import org.junit.jupiter.api.Test;
+
 import java.util.HashMap;
 import java.util.Map;
-import org.junit.jupiter.api.Test;
 
 public class HelloWorldTest {
 
@@ -99,10 +100,51 @@ public class HelloWorldTest {
     body.put("param2", "value2");
 
     Response response = RestAssured
-        .given()
-        .body(body)
-        .post("https://playground.learnqa.ru/api/check_type")
-        .andReturn();
+            .given()
+            .body(body)
+            .post("https://playground.learnqa.ru/api/check_type")
+            .andReturn();
     response.print();
+  }
+
+  @Test
+  public void testGetStatusCode200() {
+    Response response = RestAssured
+            .get("https://playground.learnqa.ru/api/check_type")
+            .andReturn();
+    int statusCode = response.getStatusCode();
+    System.out.println(statusCode);
+  }
+
+  @Test
+  public void testGetStatusCode500() {
+    Response response = RestAssured
+            .get("https://playground.learnqa.ru/api/get_500")
+            .andReturn();
+    int statusCode = response.getStatusCode();
+    System.out.println(statusCode);
+  }
+
+  @Test
+  public void testGetStatusCode404() {
+    Response response = RestAssured
+            .get("https://playground.learnqa.ru/api/non-existent_method")
+            .andReturn();
+    int statusCode = response.getStatusCode();
+    System.out.println(statusCode);
+  }
+
+  @Test
+  public void testGetStatusCode303Redirect() {
+    Response response = RestAssured
+            .given()
+            .redirects()
+            //.follow(false) // результат: 303
+            .follow(true) // результат: 200
+            .when()
+            .get("https://playground.learnqa.ru/api/get_303")
+            .andReturn();
+    int statusCode = response.getStatusCode();
+    System.out.println(statusCode);
   }
 }
